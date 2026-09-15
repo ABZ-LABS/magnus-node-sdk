@@ -1,0 +1,59 @@
+{
+  "name": "iamagnus",
+  "version": "0.1.0",
+  "description": "Node client for the Magnus Core API: governed AI agents behind an OpenAI-compatible surface",
+  "keywords": [
+    "magnus",
+    "iamagnus",
+    "sdk",
+    "agents",
+    "chat",
+    "llm",
+    "openai-compatible"
+  ],
+  "homepage": "https://core.iamagnus.com",
+  "bugs": {
+    "url": "https://github.com/MeGrimlock/magnus-node-sdk/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MeGrimlock/magnus-node-sdk.git"
+  },
+  "license": "Apache-2.0",
+  "author": "Magnus",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "magnus-livecheck": "./dist/livecheck.js"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "CONTRACT.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test \"tests/**/*.test.ts\"",
+    "verify": "npm run typecheck && npm run test",
+    "livecheck": "node src/livecheck.ts",
+    "prepublishOnly": "npm run verify && npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  }
+}

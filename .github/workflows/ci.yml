@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["22", "24"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm ci
+      - run: npm run verify
+
+  # The tests need type stripping (Node 22.18+); the published build must still
+  # load on the oldest Node the package claims.
+  runtime-node-20:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci && npm run build && npm pack
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install the tarball and import it
+        run: |
+          mkdir /tmp/smoke && cd /tmp/smoke && npm init -y >/dev/null
+          npm install "$GITHUB_WORKSPACE"/iamagnus-*.tgz
+          node --input-type=module -e 'import { MagnusClient, VERSION } from "iamagnus"; new MagnusClient({ baseUrl: "http://127.0.0.1:1", apiKey: "k" }); console.log(VERSION)'
+          set +e; npx magnus-livecheck; code=$?; set -e
+          test "$code" -eq 2 || { echo "magnus-livecheck exited $code without credentials, expected 2"; exit 1; }

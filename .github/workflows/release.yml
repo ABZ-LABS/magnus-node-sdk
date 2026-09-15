@@ -1,0 +1,31 @@
+name: Release
+
+# Pushing a tag like v0.1.0 tests, builds and publishes to npm with provenance,
+# through npm trusted publishing: no token is stored in this repository.
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+      - name: Tag matches the package version
+        run: |
+          version=$(node -p 'require("./package.json").version')
+          constant=$(node -p 'require("fs").readFileSync("src/client.ts","utf8").match(/VERSION = "(.+)"/)[1]')
+          test "v$version" = "$GITHUB_REF_NAME" || { echo "tag $GITHUB_REF_NAME != package.json $version"; exit 1; }
+          test "$constant" = "$version" || { echo "VERSION $constant != package.json $version"; exit 1; }
+      - run: npm install -g npm@latest
+      - run: npm ci
+      - run: npm publish --provenance --access public
