@@ -42,14 +42,14 @@ code is the same and so is the import, `import { MagnusClient } from "iamagnus"`
 install. It needs `git` on the machine:
 
 ```bash
-npm install github:MeGrimlock/magnus-node-sdk#v0.1.0
+npm install github:ABZ-LABS/magnus-node-sdk#v0.1.0
 ```
 
 which leaves this in `package.json`:
 
 ```json
 "dependencies": {
-  "iamagnus": "github:MeGrimlock/magnus-node-sdk#v0.1.0"
+  "iamagnus": "github:ABZ-LABS/magnus-node-sdk#v0.1.0"
 }
 ```
 
@@ -63,7 +63,7 @@ network). Build the tarball once on a machine that has access, and ship the
 file with the project:
 
 ```bash
-git clone --branch v0.1.0 https://github.com/MeGrimlock/magnus-node-sdk
+git clone --branch v0.1.0 https://github.com/ABZ-LABS/magnus-node-sdk
 cd magnus-node-sdk && npm ci && npm pack
 # iamagnus-0.1.0.tgz goes into the project, e.g. under vendor/
 

@@ -13,11 +13,11 @@
   ],
   "homepage": "https://core.iamagnus.com",
   "bugs": {
-    "url": "https://github.com/MeGrimlock/magnus-node-sdk/issues"
+    "url": "https://github.com/ABZ-LABS/magnus-node-sdk/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MeGrimlock/magnus-node-sdk.git"
+    "url": "git+https://github.com/ABZ-LABS/magnus-node-sdk.git"
   },
   "license": "Apache-2.0",
   "author": "Magnus",

@@ -15,7 +15,7 @@ exists, so the very first version goes out by hand:
    release commit. `prepublishOnly` runs the typecheck, the tests and the build
    first.
 2. On npmjs.com, open the package's *Settings → Trusted publishing* and add
-   GitHub Actions: owner `MeGrimlock`, repository `magnus-node-sdk`, workflow
+   GitHub Actions: owner `ABZ-LABS`, repository `magnus-node-sdk`, workflow
    `release.yml`, environment `npm`.
 3. On GitHub, under *Settings → Environments*, create an environment named
    `npm`.

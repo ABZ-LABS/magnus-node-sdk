@@ -43,14 +43,14 @@ código es el mismo y el import también:
 instalarlo. Necesita `git` en la máquina:
 
 ```bash
-npm install github:MeGrimlock/magnus-node-sdk#v0.1.0
+npm install github:ABZ-LABS/magnus-node-sdk#v0.1.0
 ```
 
 lo que deja esto en `package.json`:
 
 ```json
 "dependencies": {
-  "iamagnus": "github:MeGrimlock/magnus-node-sdk#v0.1.0"
+  "iamagnus": "github:ABZ-LABS/magnus-node-sdk#v0.1.0"
 }
 ```
 
@@ -64,7 +64,7 @@ Construye el tarball una vez en una máquina con acceso y entrega el archivo
 junto con el proyecto:
 
 ```bash
-git clone --branch v0.1.0 https://github.com/MeGrimlock/magnus-node-sdk
+git clone --branch v0.1.0 https://github.com/ABZ-LABS/magnus-node-sdk
 cd magnus-node-sdk && npm ci && npm pack
 # iamagnus-0.1.0.tgz va dentro del proyecto, por ejemplo en vendor/
 

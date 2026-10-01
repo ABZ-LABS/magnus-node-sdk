@@ -16,7 +16,7 @@ así que la primera versión se publica a mano:
    del commit de la versión. `prepublishOnly` corre antes el chequeo de tipos,
    los tests y el build.
 2. En npmjs.com, abre *Settings → Trusted publishing* del paquete y agrega
-   GitHub Actions: owner `MeGrimlock`, repositorio `magnus-node-sdk`, workflow
+   GitHub Actions: owner `ABZ-LABS`, repositorio `magnus-node-sdk`, workflow
    `release.yml`, environment `npm`.
 3. En GitHub, en *Settings → Environments*, crea un environment llamado `npm`.
 
