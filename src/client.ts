@@ -37,7 +37,7 @@ const RETRY_STATUSES = new Set([429, 500, 502, 503, 504]);
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export interface MagnusClientOptions {
-  /** The server root, e.g. `https://api.iamagnus.com`. Not the `/v1` prefix. */
+  /** The server root, e.g. `https://app.iamagnus.com`. Not the `/v1` prefix. */
   baseUrl: string;
   /** A System API Key or User API Key from the Magnus dashboard. */
   apiKey: string;
@@ -346,12 +346,16 @@ export class MagnusClient {
   }
 
   /**
-   * Open a thread that carries its `session_id` across turns.
+   * Open a thread with an agent for one end user.
    *
    * Prefer this over {@link sendMessage} with `history`: the server keeps
-   * memory server-side and identifies the thread by session id. Without one,
-   * continuity falls back to a time window and is lost silently when it
-   * expires.
+   * memory server-side and reads only the last user message. A thread is the
+   * end user, not resent history: there is one live thread per (API key,
+   * `user`, agent), and it ends after 30 idle minutes. Pass `user`, or everyone
+   * calling through the key shares one thread.
+   *
+   * The conversation sends back the `session_id` the server reports, but the
+   * server does not let a session id select, resume or reset a thread.
    */
   conversation(
     agentId: string,
@@ -362,11 +366,12 @@ export class MagnusClient {
 }
 
 /**
- * A thread with an agent, identified by its session id.
+ * A thread with an agent for one end user.
  *
  * The server reads only the last user message and keeps the conversation's
- * memory and state server-side; the thread is the session id, not the history
- * a client resends.
+ * memory and state server-side. The thread is (API key, `user`, agent), not
+ * the history a client resends; `sessionId` reports which session the server
+ * ran on.
  */
 export class Conversation {
   sessionId: string | null;
@@ -426,7 +431,12 @@ export class Conversation {
     });
   }
 
-  /** Forget the session id, so the next turn opens a new conversation. */
+  /**
+   * Forget the session id this object holds.
+   *
+   * The server still continues the end user's live thread: a new thread starts
+   * after 30 idle minutes, or with a different `user`.
+   */
   reset(): void {
     this.sessionId = null;
     this.sessionSource = null;

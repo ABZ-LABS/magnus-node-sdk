@@ -4,7 +4,7 @@
  * ```ts
  * import { MagnusClient } from "iamagnus";
  *
- * const client = new MagnusClient({ baseUrl: "https://api.iamagnus.com", apiKey: "magnus_sys_..." });
+ * const client = new MagnusClient({ baseUrl: "https://app.iamagnus.com", apiKey: "magnus_sys_..." });
  * const [agent] = await client.listAgents();
  *
  * // A thread. The session id — not resent history — is what continues it.
