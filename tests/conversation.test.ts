@@ -102,3 +102,39 @@ describe("conversation streaming", () => {
     assert.equal(chat.sessionId, known);
   });
 });
+
+// A person from the team can take a conversation over from the agent. The server
+// keeps answering 200 — the agent's hand-off, then a fixed notice — so without
+// the flag a caller cannot tell a person is in charge.
+describe("conversation handoff", () => {
+  it("starts with the agent", async () => {
+    const chat = ctx.client().conversation("magnus_standard");
+    await chat.send("Hola");
+    assert.equal(chat.handoff, false);
+  });
+
+  it("follows the server turn by turn", async () => {
+    const chat = ctx.client().conversation("magnus_standard");
+    ctx.magnus().handoff = true;
+    await chat.send("Quiero hablar con una persona");
+    assert.equal(chat.handoff, true);
+    ctx.magnus().handoff = false;
+    await chat.send("Hola de nuevo");
+    assert.equal(chat.handoff, false);
+  });
+
+  it("is reported by a streamed turn too", async () => {
+    ctx.magnus().handoff = true;
+    const chat = ctx.client().conversation("magnus_standard");
+    const stream = await chat.stream("Hola");
+    await stream.collect();
+    assert.equal(chat.handoff, true);
+  });
+
+  it("is false when the server does not send the field", async () => {
+    ctx.magnus().handoff = null;
+    const chat = ctx.client().conversation("magnus_standard");
+    await chat.send("Hola");
+    assert.equal(chat.handoff, false);
+  });
+});

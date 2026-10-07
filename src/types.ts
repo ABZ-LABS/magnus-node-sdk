@@ -55,6 +55,12 @@ export interface MagnusExtensions {
    * metering or billing off `usage` has to be able to tell them apart.
    */
   usage_source: "measured" | "estimated";
+  /**
+   * True while a person from the team owns the conversation: the turn where
+   * the agent hands off, and every turn after it, whose reply is a fixed
+   * notice. A server older than the field omits it; that is not a handoff.
+   */
+  handoff?: boolean;
 }
 
 export interface ChatResponse {

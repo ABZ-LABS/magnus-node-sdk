@@ -154,6 +154,12 @@ out of turns, the turn returns HTTP 200 with a sentence instead of an answer,
 `usage_source: "estimated"` and no trace id, not a 429. The list is in
 [CONTRACT.md](CONTRACT.md#limits-that-answer-200).
 
+**A person can take over.** When the agent hands a conversation to someone on
+your team, or they take it from the dashboard, the agent stops answering until
+it is handed back. Every turn still returns 200 — first the agent's hand-off
+message, then a fixed notice — and `chat.handoff` is `true` for as long as a
+person is in charge. The operator's own replies do not reach the API yet.
+
 **A streamed turn can fail after HTTP 200.** Once the first chunk is out the
 status line cannot be taken back, so a failure arrives *inside* the stream. This
 client throws a `StreamError` rather than handing back a truncated answer as a
@@ -285,7 +291,7 @@ key for a test agent.
 | `chat(agent, messages, opts?)` | one buffered turn |
 | `streamChat(agent, messages, opts?)` | one streamed turn |
 | `sendMessage(agent, content, opts?)` | text in, text out |
-| `conversation(agent, { user?, sessionId? })` | a thread for one end user: `.send()`, `.stream()`, `.reset()` |
+| `conversation(agent, { user?, sessionId? })` | a thread for one end user: `.send()`, `.stream()`, `.reset()`; after each turn `.lastTraceId`, `.lastUsageSource` and `.handoff` |
 
 `opts.extraBody` forwards server fields newer than this library. Every wire
 detail is in [CONTRACT.md](CONTRACT.md).

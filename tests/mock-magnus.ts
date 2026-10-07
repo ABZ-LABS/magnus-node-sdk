@@ -89,6 +89,8 @@ export class MockMagnus {
   traceId: string | null = "trace-1";
   turnId: string | null = "turn-1";
   usageSource = "measured";
+  /** True stands for a conversation a person has taken over; null for a server older than the field. */
+  handoff: boolean | null = false;
   usage = { prompt_tokens: 11, completion_tokens: 7, total_tokens: 18 };
   rateLimitRemaining = 119;
   rateLimitReset = "2026-09-09T12:01:00+00:00";
@@ -149,6 +151,7 @@ export class MockMagnus {
     this.traceId = "trace-1";
     this.turnId = "turn-1";
     this.usageSource = "measured";
+    this.handoff = false;
     this.usage = { prompt_tokens: 11, completion_tokens: 7, total_tokens: 18 };
     this.rateLimitRemaining = 119;
     this.rolledSessionId = null;
@@ -331,6 +334,7 @@ export class MockMagnus {
         trace_id: this.traceId,
         turn_id: this.turnId,
         usage_source: this.usageSource,
+        ...(this.handoff === null ? {} : { handoff: this.handoff }),
       },
     };
     const usage = { ...this.usage };

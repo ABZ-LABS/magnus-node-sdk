@@ -159,6 +159,13 @@ su plan se quedan sin turnos, el turno devuelve HTTP 200 con una frase en lugar
 de una respuesta, `usage_source: "estimated"` y sin trace id; no un 429. La
 lista está en [CONTRACT.es.md](CONTRACT.es.md#límites-que-responden-200).
 
+**Una persona puede tomar la conversación.** Cuando el agente deriva a alguien
+de tu equipo, o lo toman desde el panel, el agente deja de responder hasta que
+se la devuelvan. Cada turno sigue devolviendo 200 —primero el mensaje de
+derivación del agente, después un aviso fijo— y `chat.handoff` es `true`
+mientras una persona esté a cargo. Las respuestas del operador todavía no
+llegan por la API.
+
 **Un turno en streaming puede fallar después del HTTP 200.** Una vez que salió
 el primer fragmento, la línea de estado ya no se puede cambiar, así que el
 fallo llega *dentro* del stream. Este cliente lanza un `StreamError` en lugar
@@ -294,7 +301,7 @@ agente, así que crea la key para un agente de prueba.
 | `chat(agent, messages, opts?)` | un turno completo |
 | `streamChat(agent, messages, opts?)` | un turno en streaming |
 | `sendMessage(agent, content, opts?)` | entra texto, sale texto |
-| `conversation(agent, { user?, sessionId? })` | un hilo para un usuario final: `.send()`, `.stream()`, `.reset()` |
+| `conversation(agent, { user?, sessionId? })` | un hilo para un usuario final: `.send()`, `.stream()`, `.reset()`; después de cada turno `.lastTraceId`, `.lastUsageSource` y `.handoff` |
 
 `opts.extraBody` reenvía campos del servidor más nuevos que esta biblioteca.
 Cada detalle del cable está en [CONTRACT.es.md](CONTRACT.es.md).

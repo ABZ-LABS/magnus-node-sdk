@@ -380,6 +380,8 @@ export class Conversation {
   lastTurnId: string | null = null;
   lastUsage: Usage | null = null;
   lastUsageSource: string | null = null;
+  /** True while a person from the team owns the conversation (see `MagnusExtensions.handoff`). */
+  handoff = false;
 
   readonly agentId: string;
   #client: MagnusClient;
@@ -454,6 +456,8 @@ export class Conversation {
     this.lastTraceId = magnus?.trace_id ?? null;
     this.lastTurnId = magnus?.turn_id ?? null;
     this.lastUsageSource = magnus?.usage_source ?? null;
+    // A server older than the field omits it: that is not a handoff.
+    this.handoff = magnus?.handoff === true;
     if (usage) this.lastUsage = usage;
   }
 }
