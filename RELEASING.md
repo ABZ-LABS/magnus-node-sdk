@@ -24,7 +24,7 @@ exists, so the very first version goes out by hand:
 
 1. Set the same version in `package.json` and in `VERSION` in `src/client.ts`.
 2. Run `npm run livecheck` against the production API with a test agent. All
-   fourteen checks must pass.
+   fifteen checks must pass.
 3. Commit, then tag and push:
 
    ```bash

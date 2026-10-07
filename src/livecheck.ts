@@ -189,6 +189,16 @@ export async function livecheck(options: LivecheckOptions): Promise<number> {
       state.budget = client.rateLimitRemaining;
       return null;
     } },
+    { number: 15, name: "the team's replies can be fetched", run: async () => {
+      // A server older than the endpoint answers 404, and the SDK's
+      // updates()/follow() would fail for every user of this release.
+      const page = await client.conversationUpdates(state.agentId, {
+        user: `livecheck-${randomUUID()}`,
+      });
+      return Array.isArray(page.data)
+        ? null
+        : "GET /v1/conversations/updates did not answer a page with `data`";
+    } },
   ];
 
   log(`magnus-node-sdk ${VERSION} -> ${options.baseUrl}`);

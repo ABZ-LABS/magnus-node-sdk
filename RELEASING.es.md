@@ -24,7 +24,7 @@ así que la primera versión se publica a mano:
 
 1. Pon la misma versión en `package.json` y en `VERSION` de `src/client.ts`.
 2. Corre `npm run livecheck` contra la API de producción con un agente de
-   prueba. Tienen que pasar los catorce chequeos.
+   prueba. Tienen que pasar los quince chequeos.
 3. Haz el commit, crea el tag y súbelo:
 
    ```bash

@@ -29,14 +29,14 @@ describe("livecheck", () => {
       baseUrl: ctx.magnus().url, apiKey: "k", color: false, log: out.log,
     });
     assert.equal(code, 0, out.text());
-    assert.match(out.text(), /all 14 checks passed/);
+    assert.match(out.text(), /all 15 checks passed/);
     assert.doesNotMatch(out.text(), /FAIL/);
   });
 
   it("actually runs every check", async () => {
     const out = capture();
     await livecheck({ baseUrl: ctx.magnus().url, apiKey: "k", color: false, log: out.log });
-    for (let n = 1; n <= 14; n++) {
+    for (let n = 1; n <= 15; n++) {
       assert.match(out.text(), new RegExp(`\\s${n}\\. `), `check ${n} never ran`);
     }
   });
@@ -104,5 +104,16 @@ describe("livecheck", () => {
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+
+  // Releasing updates()/follow() against a server that 404s it would break
+  // every user of the release: check 15 is what stops it.
+  it("fails the gate on a server without the updates endpoint", async () => {
+    ctx.magnus().servesUpdates = false;
+    const out = capture();
+    const code = await livecheck({ baseUrl: ctx.magnus().url, apiKey: "k", color: false, log: out.log });
+    assert.equal(code, 1);
+    assert.match(out.text(), /15\. /);
+    assert.match(out.text(), /FAIL/);
   });
 });

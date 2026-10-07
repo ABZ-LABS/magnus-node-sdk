@@ -1,6 +1,6 @@
 {
   "name": "iamagnus",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Node client for the Magnus Core API: governed AI agents behind an OpenAI-compatible surface",
   "keywords": [
     "magnus",

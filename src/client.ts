@@ -25,7 +25,7 @@ import type {
   Agent, ChatMessage, ChatResponse, Content, ConversationUpdates, OperatorMessage, Usage,
 } from "./types.ts";
 
-export const VERSION = "0.1.0";
+export const VERSION = "0.2.0";
 
 /**
  * Above the 60s read timeout common in reverse proxies. Matching it exactly

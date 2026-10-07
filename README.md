@@ -42,14 +42,14 @@ code is the same and so is the import, `import { MagnusClient } from "iamagnus"`
 install. It needs `git` on the machine:
 
 ```bash
-npm install github:ABZ-LABS/magnus-node-sdk#v0.1.0
+npm install github:ABZ-LABS/magnus-node-sdk#v0.2.0
 ```
 
 which leaves this in `package.json`:
 
 ```json
 "dependencies": {
-  "iamagnus": "github:ABZ-LABS/magnus-node-sdk#v0.1.0"
+  "iamagnus": "github:ABZ-LABS/magnus-node-sdk#v0.2.0"
 }
 ```
 
@@ -63,11 +63,11 @@ network). Build the tarball once on a machine that has access, and ship the
 file with the project:
 
 ```bash
-git clone --branch v0.1.0 https://github.com/ABZ-LABS/magnus-node-sdk
+git clone --branch v0.2.0 https://github.com/ABZ-LABS/magnus-node-sdk
 cd magnus-node-sdk && npm ci && npm pack
-# iamagnus-0.1.0.tgz goes into the project, e.g. under vendor/
+# iamagnus-0.2.0.tgz goes into the project, e.g. under vendor/
 
-npm install ./vendor/iamagnus-0.1.0.tgz
+npm install ./vendor/iamagnus-0.2.0.tgz
 ```
 
 The tarball is complete: the library has no runtime dependencies.
@@ -281,7 +281,7 @@ rotated key starts every person over.
 
 ## Verifying a deployment
 
-`magnus-livecheck` runs the fourteen checks in [CONTRACT.md](CONTRACT.md)
+`magnus-livecheck` runs the fifteen checks in [CONTRACT.md](CONTRACT.md)
 against a real deployment and exits non-zero unless all of them pass:
 
 ```bash

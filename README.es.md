@@ -43,14 +43,14 @@ código es el mismo y el import también:
 instalarlo. Necesita `git` en la máquina:
 
 ```bash
-npm install github:ABZ-LABS/magnus-node-sdk#v0.1.0
+npm install github:ABZ-LABS/magnus-node-sdk#v0.2.0
 ```
 
 lo que deja esto en `package.json`:
 
 ```json
 "dependencies": {
-  "iamagnus": "github:ABZ-LABS/magnus-node-sdk#v0.1.0"
+  "iamagnus": "github:ABZ-LABS/magnus-node-sdk#v0.2.0"
 }
 ```
 
@@ -64,11 +64,11 @@ Construye el tarball una vez en una máquina con acceso y entrega el archivo
 junto con el proyecto:
 
 ```bash
-git clone --branch v0.1.0 https://github.com/ABZ-LABS/magnus-node-sdk
+git clone --branch v0.2.0 https://github.com/ABZ-LABS/magnus-node-sdk
 cd magnus-node-sdk && npm ci && npm pack
-# iamagnus-0.1.0.tgz va dentro del proyecto, por ejemplo en vendor/
+# iamagnus-0.2.0.tgz va dentro del proyecto, por ejemplo en vendor/
 
-npm install ./vendor/iamagnus-0.1.0.tgz
+npm install ./vendor/iamagnus-0.2.0.tgz
 ```
 
 El tarball está completo: la biblioteca no tiene dependencias en tiempo de
@@ -290,7 +290,7 @@ de la key: una key nueva o rotada hace empezar de cero a cada persona.
 
 ## Verificar un despliegue
 
-`magnus-livecheck` corre los catorce chequeos de [CONTRACT.es.md](CONTRACT.es.md)
+`magnus-livecheck` corre los quince chequeos de [CONTRACT.es.md](CONTRACT.es.md)
 contra un despliegue real y sale con un código distinto de cero salvo que pasen
 todos:
 

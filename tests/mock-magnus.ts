@@ -96,6 +96,8 @@ export class MockMagnus {
   updatesPage = 50;
   /** Called before each updates request, so a test can change state between polls. */
   beforeUpdates: ((server: MockMagnus) => void) | null = null;
+  /** False stands for a server older than the endpoint: it answers 404. */
+  servesUpdates = true;
   usage = { prompt_tokens: 11, completion_tokens: 7, total_tokens: 18 };
   rateLimitRemaining = 119;
   rateLimitReset = "2026-09-09T12:01:00+00:00";
@@ -160,6 +162,7 @@ export class MockMagnus {
     this.operatorMessages = [];
     this.updatesPage = 50;
     this.beforeUpdates = null;
+    this.servesUpdates = true;
     this.usage = { prompt_tokens: 11, completion_tokens: 7, total_tokens: 18 };
     this.rateLimitRemaining = 119;
     this.rolledSessionId = null;
@@ -245,7 +248,7 @@ export class MockMagnus {
       });
     }
 
-    if (req.method === "GET" && path.startsWith("/v1/conversations/updates")) {
+    if (req.method === "GET" && path.startsWith("/v1/conversations/updates") && this.servesUpdates) {
       const query = new URL(path, "http://mock").searchParams;
       this.beforeUpdates?.(this);
       const ids = this.operatorMessages.map((m) => m.id);
