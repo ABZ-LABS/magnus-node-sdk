@@ -138,3 +138,81 @@ describe("conversation handoff", () => {
     assert.equal(chat.handoff, false);
   });
 });
+
+// A person from the team answers in the dashboard while the end user is not
+// asking anything, so no chat turn can carry the reply: the SDK fetches it.
+function operatorMessage(content: string) {
+  return { id: randomUUID(), object: "conversation.message", author: "human", content, created: 1767225600 };
+}
+
+describe("the team's replies", () => {
+  it("updates() returns the replies and the handoff", async () => {
+    ctx.magnus().handoff = true;
+    ctx.magnus().operatorMessages = [operatorMessage("Hola, soy del equipo")];
+    const chat = ctx.client().conversation("magnus_standard", { user: "jane@company.com" });
+
+    const replies = await chat.updates();
+
+    assert.deepEqual(replies.map((r) => r.content), ["Hola, soy del equipo"]);
+    assert.equal(replies[0].author, "human");
+    assert.equal(chat.handoff, true);
+    const request = ctx.magnus().requests.at(-1)!;
+    assert.equal(request.method, "GET");
+    assert.match(request.path, /user=jane%40company\.com/);
+    assert.match(request.path, /model=magnus_standard/);
+  });
+
+  it("brings only what is new on a second call", async () => {
+    ctx.magnus().handoff = true;
+    ctx.magnus().operatorMessages = [operatorMessage("uno")];
+    const chat = ctx.client().conversation("magnus_standard");
+    await chat.updates();
+    const first = chat.lastUpdateId;
+    ctx.magnus().operatorMessages.push(operatorMessage("dos"));
+
+    assert.deepEqual((await chat.updates()).map((r) => r.content), ["dos"]);
+    assert.match(ctx.magnus().requests.at(-1)!.path, new RegExp(`after=${first}`));
+  });
+
+  it("follows pages to the end", async () => {
+    ctx.magnus().updatesPage = 2;
+    ctx.magnus().operatorMessages = ["m0", "m1", "m2", "m3", "m4"].map(operatorMessage);
+    const chat = ctx.client().conversation("magnus_standard");
+
+    assert.deepEqual((await chat.updates()).map((r) => r.content), ["m0", "m1", "m2", "m3", "m4"]);
+  });
+
+  it("follow() yields as replies arrive and ends with the handoff", async () => {
+    ctx.magnus().handoff = true;
+    const script = [["uno"], ["dos", "tres"], []];
+    ctx.magnus().beforeUpdates = (server) => {
+      const next = script.shift();
+      if (next) server.operatorMessages.push(...next.map(operatorMessage));
+      else server.handoff = false;
+    };
+    const chat = ctx.client().conversation("magnus_standard");
+
+    const seen: string[] = [];
+    for await (const message of chat.follow({ intervalMs: 0 })) seen.push(message.content);
+
+    assert.deepEqual(seen, ["uno", "dos", "tres"]);
+    assert.equal(chat.handoff, false);
+  });
+
+  it("follow() ends at once when nobody took over", async () => {
+    const chat = ctx.client().conversation("magnus_standard");
+    const seen: unknown[] = [];
+    for await (const message of chat.follow({ intervalMs: 0 })) seen.push(message);
+
+    assert.deepEqual(seen, []);
+    assert.equal(ctx.magnus().requests.length, 1);
+  });
+
+  it("resumes from a stored cursor without repeats", async () => {
+    ctx.magnus().operatorMessages = [operatorMessage("visto"), operatorMessage("nuevo")];
+    const chat = ctx.client().conversation("magnus_standard");
+    chat.lastUpdateId = ctx.magnus().operatorMessages[0].id;
+
+    assert.deepEqual((await chat.updates()).map((r) => r.content), ["nuevo"]);
+  });
+});

@@ -21,7 +21,9 @@ import {
   errorFromResponse,
 } from "./errors.ts";
 import { ChatStream, iterSSE } from "./stream.ts";
-import type { Agent, ChatMessage, ChatResponse, Content, Usage } from "./types.ts";
+import type {
+  Agent, ChatMessage, ChatResponse, Content, ConversationUpdates, OperatorMessage, Usage,
+} from "./types.ts";
 
 export const VERSION = "0.1.0";
 
@@ -346,6 +348,36 @@ export class MagnusClient {
   }
 
   /**
+   * One page of `GET /v1/conversations/updates`.
+   *
+   * The replies a person from the team wrote to `user` in the dashboard after
+   * the message `after` (or within the last 24 hours), and `handoff`: whether a
+   * person owns the conversation now. A chat turn cannot carry these — they are
+   * written while the end user is not asking anything. Prefer
+   * {@link Conversation.updates} and {@link Conversation.follow}, which keep the
+   * cursor.
+   */
+  async conversationUpdates(
+    agentId: string,
+    options: { user?: string; after?: string } = {},
+  ): Promise<ConversationUpdates> {
+    const params = new URLSearchParams({ model: agentId });
+    const user = options.user ?? this.user;
+    if (user !== undefined) params.set("user", user);
+    if (options.after !== undefined) params.set("after", options.after);
+    const response = await this.#request("GET", `/v1/conversations/updates?${params}`, {
+      retry: true,
+    });
+    const body = (await safeJson(response)) as Partial<ConversationUpdates> | null;
+    return {
+      object: "list",
+      handoff: body?.handoff === true,
+      data: body?.data ?? [],
+      has_more: body?.has_more === true,
+    };
+  }
+
+  /**
    * Open a thread with an agent for one end user.
    *
    * Prefer this over {@link sendMessage} with `history`: the server keeps
@@ -382,6 +414,12 @@ export class Conversation {
   lastUsageSource: string | null = null;
   /** True while a person from the team owns the conversation (see `MagnusExtensions.handoff`). */
   handoff = false;
+  /**
+   * The id of the last reply from the team that `updates()` returned. An app
+   * that must not show a reply twice across restarts stores it and sets it back
+   * on a new conversation.
+   */
+  lastUpdateId: string | null = null;
 
   readonly agentId: string;
   #client: MagnusClient;
@@ -431,6 +469,46 @@ export class Conversation {
         this.#adopt(stream.magnus, stream.sessionId ?? undefined, stream.usage ?? undefined);
       },
     });
+  }
+
+  /**
+   * The replies a person from the team wrote since the last call, oldest first.
+   *
+   * The operator is never named (`author` is always "human"). Also refreshes
+   * `handoff`. The first call, with no `lastUpdateId`, returns the last 24 hours.
+   */
+  async updates(): Promise<OperatorMessage[]> {
+    const messages: OperatorMessage[] = [];
+    for (;;) {
+      const page = await this.#client.conversationUpdates(this.agentId, {
+        user: this.#user,
+        after: this.lastUpdateId ?? undefined,
+      });
+      messages.push(...page.data);
+      const last = page.data.at(-1);
+      if (last) this.lastUpdateId = last.id;
+      this.handoff = page.handoff;
+      if (!page.has_more || !page.data.length) return messages;
+    }
+  }
+
+  /**
+   * Yield the team's replies as they arrive, while a person is in charge.
+   *
+   * Polls `updates()` every `intervalMs` and ends once the conversation is back
+   * with the agent (`handoff` false) — so it ends at once when nobody had taken
+   * over. Pass a `signal` to stop it earlier.
+   */
+  async *follow(
+    options: { intervalMs?: number; signal?: AbortSignal } = {},
+  ): AsyncGenerator<OperatorMessage> {
+    const interval = options.intervalMs ?? 5000;
+    for (;;) {
+      if (options.signal?.aborted) return;
+      for (const message of await this.updates()) yield message;
+      if (!this.handoff || options.signal?.aborted) return;
+      await sleep(interval);
+    }
   }
 
   /**

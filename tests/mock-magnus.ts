@@ -91,6 +91,11 @@ export class MockMagnus {
   usageSource = "measured";
   /** True stands for a conversation a person has taken over; null for a server older than the field. */
   handoff: boolean | null = false;
+  /** What GET /v1/conversations/updates serves: the operator's replies, oldest first. */
+  operatorMessages: Array<Record<string, unknown> & { id: string }> = [];
+  updatesPage = 50;
+  /** Called before each updates request, so a test can change state between polls. */
+  beforeUpdates: ((server: MockMagnus) => void) | null = null;
   usage = { prompt_tokens: 11, completion_tokens: 7, total_tokens: 18 };
   rateLimitRemaining = 119;
   rateLimitReset = "2026-09-09T12:01:00+00:00";
@@ -152,6 +157,9 @@ export class MockMagnus {
     this.turnId = "turn-1";
     this.usageSource = "measured";
     this.handoff = false;
+    this.operatorMessages = [];
+    this.updatesPage = 50;
+    this.beforeUpdates = null;
     this.usage = { prompt_tokens: 11, completion_tokens: 7, total_tokens: 18 };
     this.rateLimitRemaining = 119;
     this.rolledSessionId = null;
@@ -234,6 +242,29 @@ export class MockMagnus {
       return this.#json(res, 200, {
         object: "list",
         data: this.agents.map(modelObject),
+      });
+    }
+
+    if (req.method === "GET" && path.startsWith("/v1/conversations/updates")) {
+      const query = new URL(path, "http://mock").searchParams;
+      this.beforeUpdates?.(this);
+      const ids = this.operatorMessages.map((m) => m.id);
+      const after = query.get("after");
+      if (after && !ids.includes(after)) {
+        return this.#json(
+          res, 400,
+          errorBody("after is not a message of this user.", {
+            param: "after", code: "invalid_cursor",
+          }),
+        );
+      }
+      const start = after ? ids.indexOf(after) + 1 : 0;
+      const page = this.operatorMessages.slice(start, start + this.updatesPage);
+      return this.#json(res, 200, {
+        object: "list",
+        handoff: Boolean(this.handoff),
+        data: page,
+        has_more: start + page.length < this.operatorMessages.length,
       });
     }
 

@@ -29,8 +29,10 @@ export type {
   ChatResponse,
   Content,
   ContentPart,
+  ConversationUpdates,
   ImagePart,
   MagnusExtensions,
+  OperatorMessage,
   TextPart,
   Usage,
 } from "./types.ts";

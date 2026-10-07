@@ -156,9 +156,23 @@ out of turns, the turn returns HTTP 200 with a sentence instead of an answer,
 
 **A person can take over.** When the agent hands a conversation to someone on
 your team, or they take it from the dashboard, the agent stops answering until
-it is handed back. Every turn still returns 200 — first the agent's hand-off
-message, then a fixed notice — and `chat.handoff` is `true` for as long as a
-person is in charge. The operator's own replies do not reach the API yet.
+the team hands it back. Every turn still returns 200 — first the agent's
+hand-off message, then a fixed notice — and `chat.handoff` is `true` for as
+long as a person is in charge. What the person writes is not the answer to any
+turn, so this client fetches it — something an OpenAI client cannot do:
+
+```ts
+await chat.send("I want to talk to someone");
+if (chat.handoff) {
+  // Polls every 5 s and ends when the agent is back; author is always "human".
+  for await (const message of chat.follow()) show(message.content);
+}
+```
+
+`chat.updates()` returns what is new without waiting, for your own loop, and
+`follow({ signal })` stops on an `AbortSignal`. To avoid showing a reply twice
+across restarts, store `chat.lastUpdateId` and set it back on the new
+conversation.
 
 **A streamed turn can fail after HTTP 200.** Once the first chunk is out the
 status line cannot be taken back, so a failure arrives *inside* the stream. This
@@ -291,7 +305,8 @@ key for a test agent.
 | `chat(agent, messages, opts?)` | one buffered turn |
 | `streamChat(agent, messages, opts?)` | one streamed turn |
 | `sendMessage(agent, content, opts?)` | text in, text out |
-| `conversation(agent, { user?, sessionId? })` | a thread for one end user: `.send()`, `.stream()`, `.reset()`; after each turn `.lastTraceId`, `.lastUsageSource` and `.handoff` |
+| `conversation(agent, { user?, sessionId? })` | a thread for one end user: `.send()`, `.stream()`, `.reset()`; after each turn `.lastTraceId`, `.lastUsageSource` and `.handoff`; the team's replies with `.updates()` and `.follow({ intervalMs?, signal? })` |
+| `conversationUpdates(agent, { user?, after? })` | one page of the team's replies, raw |
 
 `opts.extraBody` forwards server fields newer than this library. Every wire
 detail is in [CONTRACT.md](CONTRACT.md).

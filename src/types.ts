@@ -63,6 +63,26 @@ export interface MagnusExtensions {
   handoff?: boolean;
 }
 
+/** A reply a person from the team wrote in the dashboard. */
+export interface OperatorMessage {
+  id: string;
+  object: "conversation.message";
+  /** Always "human": the operator is never named. */
+  author: "human";
+  content: string;
+  /** Unix seconds. */
+  created: number;
+}
+
+/** One page of `GET /v1/conversations/updates`. */
+export interface ConversationUpdates {
+  object: "list";
+  /** Whether a person owns the conversation now. */
+  handoff: boolean;
+  data: OperatorMessage[];
+  has_more: boolean;
+}
+
 export interface ChatResponse {
   id: string;
   object: string;
